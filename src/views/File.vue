@@ -19,14 +19,14 @@
     <!-- 新增一个容器，用于左右布局 -->
     <div class="main-content" style="display: flex; flex-direction: row; gap: 20px;">
       <!-- 视频播放器 -->
-      <div class="video-section" style="width: 70%;">
-        <video controls class="fixed-video">
+      <div class="video-section">
+        <video ref="videoRef" controls class="fixed-video">
           <source :src="videoUrl" type="video/mp4">
         </video>
       </div>
 
       <!-- 文件列表 -->
-      <div class="file-list" style="width: 30%;">
+      <div class="file-list">
         <div class="flex items-center mb-4">
           <div class="flex-1"></div>
           <el-input
@@ -43,7 +43,6 @@
               :icon="Search"
               round
               @click="getList()"
-              style="margin-left: 900px"
           >搜索
           </el-button
           >
@@ -51,7 +50,6 @@
               :icon="Search"
               round
               @click="reset()"
-              style="margin-left: 10px"
           >重置
           </el-button
           >
@@ -92,18 +90,21 @@
             </template>
           </el-table-column>
         </el-table>
+
+        <!-- 分页 -->
+        <div class="example-pagination-block">
+          <el-pagination
+              @current-change="handlePageChange"
+              layout="prev, pager, next"
+              :total="total"
+              :default-page-size="searchList.pageSize"
+          />
+        </div>
+
       </div>
     </div>
 
-    <!-- 分页 -->
-    <div class="example-pagination-block">
-      <el-pagination
-          @current-change="handlePageChange"
-          layout="prev, pager, next"
-          :total="total"
-          :default-page-size="searchList.pageSize"
-      />
-    </div>
+
 
     <!-- 走马灯展示 -->
     <div class="carousel-container" v-if="imageFiles.length > 0">
@@ -117,7 +118,7 @@
 </template>
 
 <script lang="ts" setup>
-import {UploadFilled, Loading, Search} from "@element-plus/icons-vue";
+import {UploadFilled, Search} from "@element-plus/icons-vue";
 import {ElMessage} from "element-plus";
 import {
   listService,
@@ -129,8 +130,9 @@ import {ref, computed} from "vue";
 
 // 文件列表数据
 const fileList = ref([]);
-const videoUrl = ref('http://192.168.1.103:9000/localhost-file/mp4/33b65444-38d6-4ffb-b655-b2a065b8982e-tomcat-2.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250608%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250608T040231Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=428dbdad7403a4c98f1d729edb602d47d781ac6b3de45dcf2185e8e4ba1dac6e');
-// const videoUrl = ref('http://127.0.0.1:9000/localhost-file/mp4/8f3a9398-fb05-48ae-a1f1-5e22cc537f16-%E5%93%88%E5%93%88%E5%95%8A%E5%93%88.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250607%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250607T153804Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=fa5ff3636b3c58308de111aa8ba1ed56fdb6a8993deb8b888ffa592dff902d41');
+//使video重新加载
+const videoRef = ref()
+const videoUrl = ref('');
 // const imageIdList = ref([81, 82, 83, 84, 85]);
 const imageIdList = ref([91, 92, 93, 96]);
 const imageFiles = ref([]);
@@ -216,7 +218,7 @@ const handleDownload = async function (file) {
 // 处理文件预览
 const handlePreview = async function (file) {
   console.log(file)
-  if (file.fileType !== 'txt' && file.fileType !== 'pdf' && file.fileType !== 'doc' && file.fileType !== 'docx' && file.fileType !== 'mp4') {
+  if (file.fileType !== 'txt' && file.fileType !== 'pdf' && file.fileType !== 'doc' && file.fileType !== 'docx' && file.fileType !== 'mp4' && file.fileType !== 'MP4') {
     errorTips("该文件类型暂不支持预览~")
   }
   try {
@@ -231,9 +233,10 @@ const handlePreview = async function (file) {
       const textBlob = new Blob([blob], {type: 'text/plain;charset=utf-8'});
       urlPreview = window.URL.createObjectURL(textBlob);
     }
-    if (file.fileType === 'mp4') {
+    if (file.fileType === 'mp4' || file.fileType === 'MP4') {
       videoUrl.value = consult.data;
       console.log("videoUrl.value", videoUrl.value)
+      videoRef.value.load();
     } else {
       const previewWindow = window.open();
       if (previewWindow) {
@@ -320,44 +323,6 @@ export default {
   margin: 0 auto;
 }
 
-.el-upload__tip {
-  color: #909399;
-  font-size: 12px;
-  margin-top: 7px;
-}
-
-.file-list {
-  margin-top: 20px;
-}
-
-.preview-container {
-  width: 100%;
-  height: 70vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-}
-
-.preview-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  color: #909399;
-}
-
-.loading .el-icon {
-  font-size: 24px;
-}
-
 .carousel-container {
   margin-bottom: 20px;
   padding: 20px;
@@ -373,18 +338,6 @@ export default {
   border-radius: 4px;
 }
 
-:deep(.el-carousel__item) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f5f7fa;
-}
-
-:deep(.el-carousel__item img) {
-  max-width: 100%;
-  max-height: 100%;
-}
-
 .main-content {
   display: flex;
   flex-direction: row;
@@ -392,22 +345,19 @@ export default {
 }
 
 .video-section {
-  width: 30%;
-}
-
-.video-section video {
-  width: 100%;
-  height: auto;
+  width: 60%;
 }
 
 .file-list {
-  width: 70%;
+  margin-top: 20px;
+  width: 40%;
 }
 
 .fixed-video {
-  width: 1200px !important;
-  height: 650px !important;
-  object-fit: cover; /* 视频内容自适应容器 */
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 80vh; /* 控制最大高度为视口高度的80%，防止溢出 */
 }
 </style>
 

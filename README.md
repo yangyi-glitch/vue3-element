@@ -1,4 +1,4 @@
-一个简单的vue3工程项目模板
+一个简单的vue3工程模板
 # element-shan
 
 This template should help get you started developing with Vue 3 in Vite.
