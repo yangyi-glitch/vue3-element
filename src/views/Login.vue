@@ -21,20 +21,20 @@
           <div class="form-group">
             <label for="username">账号</label>
             <input
-              type="username"
-              id="username"
-              v-model="form.username"
-              placeholder="请输入邮箱"
+                type="username"
+                id="username"
+                v-model="form.username"
+                placeholder="请输入邮箱"
             />
           </div>
 
           <div class="form-group">
             <label for="password">密码</label>
             <input
-              type="password"
-              id="password"
-              v-model="form.password"
-              placeholder="请输入密码"
+                type="password"
+                id="password"
+                v-model="form.password"
+                placeholder="请输入密码"
             />
             <span class="toggle-password" @click="togglePasswordVisibility">
               <i :class="showPassword ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
@@ -61,10 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import { login } from "../api/article.js";
+import {ref} from "vue";
+import {useRouter} from "vue-router";
+import {ElMessage} from "element-plus";
+import {login} from "../api/article.js";
 
 const router = useRouter();
 const form = ref({
@@ -84,19 +84,19 @@ const handleLogin = async function () {
   loading.value = false;
   console.log("consult", consult.data);
   // 模拟登录成功
-  if ("登录成功" == consult.data) {
+  if (200 == consult.code) {
     ElMessage({
       message: consult.data,
       type: "success",
     });
-    localStorage.setItem("token", "123456");
-    if ("admin" == form.value.role){
+    localStorage.setItem("token", consult.data);
+    if ("admin" == form.value.role) {
       router.push("AdminIndex");
     }
-    if ("teacher" == form.value.role){
+    if ("teacher" == form.value.role) {
       router.push("TeaIndex");
     }
-  } else {
+  } else if ("500" == consult.code) {
     ElMessage({
       message: consult.data,
       type: "error",
@@ -124,6 +124,7 @@ export default {
   font-size: 1rem;
   transition: border-color 0.3s;
 }
+
 /* 全局样式重置 */
 * {
   margin: 0;

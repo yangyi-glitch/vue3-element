@@ -21,5 +21,5 @@ export async function update(data) {
 }
 
 export async function login(data) {
-    return await request.post('/article/login',data)
+    return await request.post('/user/login',data)
 }
