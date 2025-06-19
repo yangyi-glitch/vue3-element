@@ -247,7 +247,6 @@ const getArticlePage = async function () {
       });
     }
   } catch (error) {
-    console.error("Error fetching article page:", error);
     ElMessage({
       message: "网络错误，请检查您的连接",
       type: "error",
